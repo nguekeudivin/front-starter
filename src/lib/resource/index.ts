@@ -1,4 +1,3 @@
-export * from "./grouped-resource-slice";
-export * from "./resource-slice";
-export * from "./primitives";
+export * from "./grouped-resource-store";
+export * from "./resource-store";
 export * from "./type";

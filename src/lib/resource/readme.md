@@ -6,7 +6,7 @@ We are familliar with the concept of model in database implementation architectu
 
 ## Intuition
 
-Working with Model in backend tech like Laravel with the powerfull ORM that is build around this concept is so simple and straighfoward. Seeing that I wanted something similar for handling frontend data management. My first idea was make a port of the concept into frontend context. So for a resource make available by the API I create a corresponding Model in the frontend context. The model should be responsible of encapsulation the informations get from the API. So it then need to have the same structure as its correspondant in the API context. It's we directly port the database definition in the frontend context.
+Working with Model in backend tech like Laravel with the powerfull ORM that is build around this concept is so simple and straighfoward. Seeing that I wanted something similar for handling frontend data management. My first idea was make a port of the concept into frontend context. So for a resource make available by the API I create a corresponding Model in the frontend context. The model should be responsible of encapsulation the informations get from the API. So it then need to have the same structure as its correspondant in the API context. It's like we directly port the database definition in the frontend context.
 
 But the is a point. Frontend data handling is model complexe because is not just about data management but also UI interaction management. So we need to find a way to unify the data logic and UI interaction logic. And also the term model is not really frequent in the frontend context we mostly talk about store.
 
@@ -45,16 +45,16 @@ const useUserStore = create<UserStoreState>(set, get) => {
 }
 ```
 
-We are going to make a simplification by renaming `UserStoreState` to `UserState` and `useUserStore` to `useUser`.
+We are going to make a simplification by rename `useUserStore` to `useUser` and `UserStoreState` into `UserStore`.
 
 # CRUD operations
 
-In the MVC design pattern the Model is responsible for the data access layer. In frontend context to have data we make a request to the API. So the data access layer is the layer responsible of manageming the resources. So the data access operations should also be add the to store. It centralize Api request in the store. We establish this convention `NO http request written outside of a store`. No let add CRUD operations.
+In the MVC design pattern the Model is responsible for the data access layer. In frontend context to have data we make a request to the API. So the data access layer is the layer responsible of managing the resources. So the data access operations should also be add the to store. It centralize Api request in the store. We establish this convention `NO http request written outside of a store`. No let add CRUD operations.
 
 ```js
-interface UserState {
-    all: (options?: any) => Promise<User>;
-    read: (id: ID, options?:any) => Promise<User>;
+interface UserStoreState {
+    fetch: (options?: any) => Promise<User>;
+    fetchOne: (id: ID, options?:any) => Promise<User>;
     create: (data: Partial<User> | FormData, options?: any) => Promise<User>;
     update: (id: ID, data: Partial<User> | FormData, options?: any) => Promise<User>;
     destroy: (id: ID, options?: any) => Promise<any>;
@@ -63,21 +63,22 @@ interface UserState {
 
 We can add more operations to this store. And it's recommand way to handle operations in a context of UI.
 
-If we have a second model. We are going to define the same operations for that model. We need to write less code. So we create a store use that for all the other models. Let name this `ResourceStore` for that we define a `ResourceState`
+If we have a second model. We are going to define the same operations for that model. We need to write less code. So we create a store use that for all the other models. Let name this `AbstractResourceStore` for that we define a `AbstractResourceState`
 
 ```js
-interface ResourceState<T> {
-    all: (options?: any) => Promise<T>;
-    read: (id: ID, options?:any) => Promise<T>;
+interface AbstractResourceState<T> {
+    fetch: (options?: any) => Promise<T>;
+    fetchOne: (id: ID, options?:any) => Promise<T>;
     create: (data: Partial<T> | FormData, options?: any) => Promise<T>;
     update: (id: ID, data: Partial<T> | FormData, options?: any) => Promise<T>;
     destroy: (id: ID, options?: any) => Promise<any>;
 }
+
 // Now the UserState extends the resource State
-interface UserState extends ResourceState<User> {}
+interface UserStoreState extends AbstractResourceState<User> {}
 
 // We can now define other model
-interface CourseState extends ResourceState<Course> {}
+interface CourseStoretate extends AbsctractResourceState<Course> {}
 ```
 
 # State Management.
@@ -161,7 +162,6 @@ What if want to access the loading state for a given operation directly from the
 interface ResourceState<T> {
     //...
     loading: (operation: Operation, id?: ID) => boolean;
-    loadingCurrent: (operation: Operation) => boolean;
 }
 ```
 
@@ -185,16 +185,9 @@ export interface ResourceState<T> {
 
 
     update: (id: ID, data: Partial<T> | FormData, options?: any) => Promise<T>;
-    updateCurrent: (data: Partial<T>, options?: any) => Promise<T>;
-
     create: (data: Partial<T> | FormData, options?: any) => Promise<T>;
-
     destroy: (id: ID, options?: any) => Promise<any>;
-    destroyCurrent: (options?: any) => Promise<any>;
-
     loading: (operation: Operation, id?: ID) => boolean;
-    loadingCurrent: (operation: Operation) => boolean;
-
 }
 ```
 
@@ -244,7 +237,7 @@ For each card I need to know the panel it belong to. It's good store directly in
 transform = (item: T) => ({...item, groupId: item.col_id});
 ```
 
-IMPORTANT: `groupId` is convention name.
+IMPORTANT: `groupId` is convention name. The transform function should always set the groupId on the item. When overriding the transform function that need to be keep in mind.
 
 ## Operations
 
@@ -270,3 +263,121 @@ interface GroupedResourceState<T> {
     destroy: (groupId: ID, id: ID, options?: any) => Promise<any>;
 }
 ```
+
+# Design pattern.
+
+## Type definition
+
+We create a primary abstract interface that will implements by the others interfaces
+
+```js
+interface AbstractResourceState<T> {
+  current?: T;
+  // Local State Change
+  transform: (item: T) => T;
+  setCurrent: (inputs: Partial<T> | undefined) => void;
+  add: (input: T, firstPosition?: boolean) => void;
+  sync: (data: Partial<T>, predicate: (item: T) => boolean) => void;
+  syncWithId: (data: Partial<T>) => void;
+  // Request to Server.
+  // Exec a query that is provide.
+  // It receive a high level modelQuery.
+  fetch: (params?: any) => Promise<any>;
+  create: (
+    data: Partial<T> | FormData,
+    options?: OperationOptions
+  ) => Promise<T>;
+  update: (
+    id: ID,
+    data: Partial<T> | FormData,
+    options?: OperationOptions
+  ) => Promise<T>;
+  // Loading Mangement.
+  loading: (operation: Operation, id?: ID) => boolean;
+}
+```
+
+Then we implements the abstract interface created
+
+```js
+export interface BaseResourceState<T> extends AbstractResourceState<T> {
+  pagination: Pagination;
+  items: T[];
+  // Client side update functions.
+  setItems: (inputs: Partial<T>[]) => void;
+  remove: (index: number) => void;
+  filter: (predicate: (resource: T, index?: number) => boolean) => void;
+  // Request to server
+  fetchOne: (id: ID) => Promise<any>;
+  destroy: (id: ID, options?: OperationOptions) => Promise<any>;
+}
+
+export interface BaseGroupedResourceState<T> extends AbstractResourceState<T> {
+  groupId: string;
+  items: Record<ID, T[]>;
+  pagination: Record<ID, Pagination>;
+  // Local State.
+  fetchGrouped: (params?: any) => Promise<any>; // this imply that there is grouped-item route in the backend.
+  setItems: (inputs: Record<ID, T[]>) => void;
+  setGroup: (groupId: ID, inputs: T[]) => void;
+  remove: (groupId: ID, index: number) => void;
+  filter: (
+    groupId: ID,
+    predicate: (item: T, index?: number) => boolean
+  ) => void;
+  // Request to API
+  destroy: (groupId: ID, id: ID, options?: OperationOptions) => Promise<any>;
+}
+
+export type ResourceState<T> = Partial<BaseResourceState<T>>;
+export type GroupedResourceState<T> = Partial<BaseGroupedResourceState<T>>;
+
+```
+
+## Examples
+
+# Resource Store: Product store
+
+```js
+import { createResourceStore, ResourceState } from "@/lib/resource";
+import { apiClient } from "@/lib/http";
+
+export interface Product {
+  id: string;
+  name: string;
+  sku?: string;
+  price: number;
+  shopid: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TopProduct extends Product {
+  totalSales: number;
+  totalRevenue: number;
+  totalQuantitySold: number;
+}
+
+interface ProductStore extends ResourceState<Product> {
+  top?: TopProduct[];
+  getTop: (params?: any) => Promise<TopProduct[]>;
+}
+
+export const useProduct = createResourceStore<Product, ProductStore>(
+  "products",
+  (set, get) => ({
+    top: [],
+    getTop: async (params: any = {}): Promise<TopProduct[]> => {
+      const response = await apiClient().get("products/top", { params });
+      set({ top: response.data });
+      return response.data;
+    },
+  })
+);
+```
+
+We start by define the resource Modal for the resources data. In this case it's `Product`. We can add addition definitions depending on the additionnal that we need to add to the store.
+
+Then we define the store by extending the `ResourceState` class. After this we create the store using `createResourceStore`.
+
+The `createResourceStore` take generic parameters. The first one is the resource model interface `Product` and the store state `ProductStore`. The model interface is required. And the store state interface is optionnal. We provide the second only when we want to either override some methods or add additionnals elements to store like `top` and `getTop` on the example above.
