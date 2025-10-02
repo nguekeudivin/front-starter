@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Instroduction
 
-## Getting Started
+This starter kit is indented to serve as a base for every frontend project. I integrated components, libraries, pages, and some features to quick building an application.
 
-First, run the development server:
+# Features 
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Resource Store 
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## UI Stores : Errors, Loading, Display
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Errors are handle with use-errors, use-loading and useDisplay.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Global Store.
 
-## Learn More
+## Request Request
 
-To learn more about Next.js, take a look at the following resources:
+## Form Management
+Form management is handle with use-simple-form and form input. 
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Resource component structures
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Resource form
 
-## Deploy on Vercel
+### Resource modals ( create, edit, view, delete)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Resource meta
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Resource table
+
+### Resource listing
+
+### Resource page with tabs
+
+### Resource page details
+
+# Changes Logs 
+
+## 02 October 2025
+- Migrate Completely every store logic into global store
+- Remove the use-interact hook
