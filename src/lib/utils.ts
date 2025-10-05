@@ -23,7 +23,7 @@ export function formatPrice(price: number): string {
 
 export function pick(obj: any, keys: string | string[]) {
   if (Array.isArray(keys)) {
-    const result = {};
+    const result : any = {};
     for (const key of keys) {
       if (key in obj) {
         result[key] = obj[key];

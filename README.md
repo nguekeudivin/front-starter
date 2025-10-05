@@ -6,16 +6,23 @@ This starter kit is indented to serve as a base for every frontend project. I in
 
 ## Resource Store 
 
+### items
+### current
+### synchronisation
+- When doing updateCurrent the sync is set automatically to true. We are thinking of adding sync = true by default on create and update as well.
+
+
 ## UI Stores : Errors, Loading, Display
 
-Errors are handle with use-errors, use-loading and useDisplay.
+Errors are handle with use-errors, use-loading and use-display.
 
 ## Global Store.
 
 ## Request Request
 
 ## Form Management
-Form management is handle with use-simple-form and form input. 
+- Form management is handle with `use-simple-form`ß and form input. 
+- Use introduce a store binding to current form. So that we can directly update the current item. The state is only update when we call the `setValue`. Knowing that it's important to handle the `useState` correctly.
 
 ## Resource component structures
 
