@@ -1,4 +1,4 @@
-import { useLoading } from '@/hooks/use-interact';
+import { useLoading } from '@/hooks/use-loading';
 import { create } from 'zustand';
 import { apiClient } from '../http';
 import { createQuery, execute, shape } from '../query';

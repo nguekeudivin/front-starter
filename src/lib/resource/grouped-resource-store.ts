@@ -1,4 +1,4 @@
-import { useLoading } from '@/hooks/use-interact';
+import { useLoading } from '@/hooks/use-loading';
 import { create } from 'zustand';
 import { apiClient } from '../http';
 import { createPrimitive, destroyPrimitive, loadingKey, updatePrimitive, withLoading } from './primitives';
@@ -183,7 +183,7 @@ export const initGroupedResourceStore = <T>(index: string, set: any, get: any): 
             return useLoading.getState().status[loadingKey(operation, index, id)];
         },
 
-        updateCurrent: (data: Partial<T>, options?: any) => {
+        updateCurrent: (data: Partial<T> | FormData, options?: any) => {
             const current = get().current;
             if (!current) {
                 return Promise.reject('No current element selected.');

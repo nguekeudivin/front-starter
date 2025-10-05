@@ -1,4 +1,4 @@
-import { useLoading } from '@/hooks/use-interact';
+import { useLoading } from '@/hooks/use-loading';
 import { apiClient } from '../http';
 import { ID, Pagination } from './type';
 

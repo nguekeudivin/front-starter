@@ -1,4 +1,4 @@
-import { useDisplay } from '@/hooks/use-interact';
+import { useDisplay } from '@/hooks/use-display';
 import { cn } from '@/lib/utils';
 import { Info } from 'lucide-react';
 import { motion } from 'motion/react';
