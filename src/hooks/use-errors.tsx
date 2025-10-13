@@ -1,3 +1,4 @@
+import { pick } from '@/lib/utils';
 import { create } from 'zustand';
 
 const SERVER_ERROR = "Une erreur c'est produite";
@@ -11,6 +12,7 @@ interface ErrorsState {
     reset: () => void;
     log: (error: any) => void;
     render: () => React.ReactNode;
+    hasErrors: () => boolean;
 }
 
 export const useErrors = create<ErrorsState>((setter, getter) => ({
@@ -92,15 +94,32 @@ export const useErrors = create<ErrorsState>((setter, getter) => ({
     log(error: any) {
         //logError(error);
     },
-    render() {
-        const values = getter().values;
+    hasErrors: () => {
+        return (
+            Object.values(getter().values)
+                .flat()
+                .filter((value) => value != '').length != 0
+        );
+    },
+    render(...keys: any) {
+        const values = keys.length ? pick(getter().values, keys) : getter().values;
 
         if (Object.keys(values).length == 0) return null;
 
         return (
-            <div id="alert-border-1" className="mb-4 flex border-t-4 border-red-300 bg-red-50 p-4 text-red-800" role="alert">
+            <div
+                // initial={{ opacity: 0, scale: 0 }}
+                // animate={{ opacity: 1, scale: 1 }}
+                // transition={{
+                //     duration: 0.4,
+                //     scale: { type: 'spring', visualDuration: 0.4, bounce: 0.5 },
+                // }}
+                id="alert-border-1"
+                className="mb-4 flex border-t-4 border-red-300 bg-red-50 p-4 text-red-800"
+                role="alert"
+            >
                 <div className="ms-3 text-sm font-medium">
-                    {Object.entries(values).map(([key, value], index) => (
+                    {Object.entries(values).map(([key, value]: any, index) => (
                         <div key={`error${key}${index}`} className="ms-3 text-sm font-medium">
                             {Array.isArray(value) ? (
                                 <ul>

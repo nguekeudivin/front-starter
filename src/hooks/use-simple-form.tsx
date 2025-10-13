@@ -1,21 +1,42 @@
 'use client';
 
 import { ImageFile } from '@/components/ui/form';
+import { FileValue } from '@/components/ui/form/FileField';
+import { pick } from '@/lib/utils';
 import { useState } from 'react';
 
-function pick(obj: any, keys: string | string[]) {
-    if (Array.isArray(keys)) {
-        const result: any = {};
-        for (const key of keys) {
-            if (key in obj) {
-                result[key] = obj[key];
+export const createFormData = (values: any, fd = new FormData(), prefix = '') => {
+    if (typeof values === 'object' && values !== null) {
+        for (const key in values) {
+            if (Object.prototype.hasOwnProperty.call(values, key)) {
+                const value = values[key];
+                const newPrefix = prefix ? `${prefix}[${key}]` : key;
+
+                if (value instanceof File) {
+                    fd.append(newPrefix, value);
+                } else if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
+                    if (
+                        (typeof value == 'object' &&
+                            Object.prototype.hasOwnProperty.call(value, 'file') &&
+                            Object.prototype.hasOwnProperty.call(value, 'src')) ||
+                        Object.prototype.hasOwnProperty.call(value, 'url')
+                    ) {
+                        // This is the case we have and ImageFile. We need to keep only the binary
+                        if (value.file) fd.append(newPrefix, value.file);
+                    } else {
+                        createFormData(value, fd, newPrefix);
+                    }
+                } else if (value !== undefined && value !== null) {
+                    fd.append(newPrefix, String(value));
+                }
             }
         }
-        return result;
     } else {
-        return obj[keys];
+        // Handle cases where the initial `values` object is not a simple object or array
+        fd.append(prefix, String(values));
     }
-}
+    return fd;
+};
 
 export function useSimpleForm(
     defaultValues: any,
@@ -79,6 +100,10 @@ export function useSimpleForm(
         return (image: ImageFile | undefined) => setValue(key, image as ImageFile);
     }
 
+    function handleFileValue(key: string) {
+        return (file: FileValue | undefined) => setValue(key, file as FileValue);
+    }
+
     function handleChange(e: any) {
         const { name, value } = e.target;
         setValue(name, value);
@@ -99,6 +124,18 @@ export function useSimpleForm(
         if (bool) {
             setValue(name, value);
         }
+    }
+
+    function handlePhoneNumber(key: string = 'phone_number') {
+        return (value: string) => setValue(key, value);
+    }
+
+    function getPhoneNumber(key: string = 'phone_number') {
+        return values[key] && values[key] != '' ? values[key] : undefined;
+    }
+
+    function getFileValue(key: string) {
+        return values[key]?.file || values[key]?.url ? values[key] : undefined;
     }
 
     function getImageValue(key: string) {
@@ -210,9 +247,15 @@ export function useSimpleForm(
         getImageValue,
         handleImageValue,
         handleNumberChange,
+        handleFileChange: handleFileValue,
+        handleImageChange: handleImageValue,
+        handlePhoneNumber,
+        getPhoneNumber,
+        getFileValue,
         setValue,
         setValues,
         resetValue,
+        resetValues,
         values,
         handleChange,
         validate,
@@ -225,6 +268,9 @@ export function useSimpleForm(
         reset: resetValues,
         pushToggle,
         mergeValue,
+        getFormData: () => {
+            return createFormData(values);
+        },
     };
 }
 
@@ -243,36 +289,4 @@ export const validateObject = (values: any, schema: any) => {
     } else {
         return { valid: true, values };
     }
-};
-
-export const createFormData = (values: any, fd = new FormData(), prefix = '') => {
-    if (typeof values === 'object' && values !== null) {
-        for (const key in values) {
-            if (Object.prototype.hasOwnProperty.call(values, key)) {
-                const value = values[key];
-                const newPrefix = prefix ? `${prefix}[${key}]` : key;
-
-                if (value instanceof File) {
-                    fd.append(newPrefix, value);
-                } else if (Array.isArray(value) || (typeof value === 'object' && value !== null)) {
-                    if (
-                        typeof value == 'object' &&
-                        Object.prototype.hasOwnProperty.call(value, 'file') &&
-                        Object.prototype.hasOwnProperty.call(value, 'src')
-                    ) {
-                        // This is the case we have and ImageFile. We need to keep only the binary
-                        if (value.file) fd.append(newPrefix, value.file);
-                    } else {
-                        createFormData(value, fd, newPrefix);
-                    }
-                } else if (value !== undefined && value !== null) {
-                    fd.append(newPrefix, String(value));
-                }
-            }
-        }
-    } else {
-        // Handle cases where the initial `values` object is not a simple object or array
-        fd.append(prefix, String(values));
-    }
-    return fd;
 };

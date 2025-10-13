@@ -32,6 +32,12 @@ export const execute = (queryObject: any) => {
     });
 };
 
+export const queryFetch = (query: any) => {
+    return execute(createQuery(query)).then((res) => {
+        return res.data;
+    });
+};
+
 function buildModelQuery(queryDefinition: any) {
     const query: any = {
         clauses: [],
