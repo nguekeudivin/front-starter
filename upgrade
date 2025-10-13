@@ -1,0 +1,9 @@
+[from 1.b to 2.0]
+- Add FileField
+- Add support for file into use-simple-form
+- Add support for phone number into use-simple-form
+- Add support file file field into createFormData
+- Add getFormData to use-simple-form
+- Add picking on error
+- Add has errors to the use-errors hooks linked to the errors store.
+
