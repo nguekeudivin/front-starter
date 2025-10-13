@@ -51,3 +51,4 @@ export function generateRandomString(length = 8) {
 
   return result;
 }
+
