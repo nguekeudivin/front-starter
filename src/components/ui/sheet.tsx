@@ -6,11 +6,13 @@ import { useEffect } from 'react';
 import { Button } from './button';
 
 interface SheetFooterProps {
-    submit: any;
+    submit?: any;
     name: string;
     cancelText?: string;
     submitText?: string;
     loading?: boolean;
+    render?: any;
+    className?: string;
 }
 
 interface Props {
@@ -21,9 +23,10 @@ interface Props {
     header?: React.ReactNode;
     footer?: SheetFooterProps;
     side?: 'right' | 'left' | 'bottom';
+    position?: string;
 }
 
-export const Sheet = ({ name, children, title, className, header, footer, side = 'right' }: Props) => {
+export const Sheet = ({ name, children, title, className, header, footer, side = 'right', position = 'justify-end' }: Props) => {
     const store = useAppStore();
     const display = store.display;
     const isVisible = display.visible[name];
@@ -60,7 +63,7 @@ export const Sheet = ({ name, children, title, className, header, footer, side =
         <AnimatePresence>
             {isVisible && (
                 <motion.div
-                    className="fixed inset-0 z-50 flex h-screen w-full justify-end bg-black/50"
+                    className={cn('fixed inset-0 z-50 flex h-screen w-full justify-end bg-black/50', position)}
                     onClick={toggleModal}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -71,7 +74,7 @@ export const Sheet = ({ name, children, title, className, header, footer, side =
                         {...sideAnimation[side]}
                         transition={{ duration: 0.3, easing: 'ease-out' }}
                         className={cn(
-                            'relative h-full max-w-md bg-white shadow-xl',
+                            'relative h-full max-h-[100vh] max-w-md bg-white shadow-xl',
                             footer && 'flex flex-col',
                             side === 'bottom' && 'max-h-[90vh] w-full rounded-t-lg',
                             className,
@@ -98,12 +101,12 @@ export const Sheet = ({ name, children, title, className, header, footer, side =
                         </header>
 
                         {/* Scrollable content */}
-                        <div className={cn('p-4 md:px-8 md:py-6', footer && 'flex-1 overflow-y-auto')}>{children}</div>
+                        <div className={cn('h-full p-4 md:px-8 md:py-6', footer && 'flex-1 overflow-y-auto')}>{children}</div>
 
                         {/* Fixed footer */}
                         {footer && (
-                            <footer className="flex-shrink-0 border-t border-gray-200 bg-white p-4 md:px-8">
-                                <SheetFooter {...footer} />
+                            <footer className={cn('flex-shrink-0 border-t border-gray-200 bg-white p-4 md:px-8', footer.className)}>
+                                {!footer.render ? <SheetFooter {...footer} /> : <>{footer.render}</>}
                             </footer>
                         )}
                     </motion.div>
@@ -120,7 +123,7 @@ export const SheetFooter = ({
     submitText = 'Confirm',
     loading = false,
 }: {
-    submit: any;
+    submit?: any;
     name: string;
     cancelText?: string;
     submitText?: string;
