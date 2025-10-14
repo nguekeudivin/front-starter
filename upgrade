@@ -6,4 +6,5 @@
 - Add getFormData to use-simple-form
 - Add picking on error
 - Add has errors to the use-errors hooks linked to the errors store.
-
+- Make a log update on the footer of sheet.
+[from 2.0 to 3.0]
