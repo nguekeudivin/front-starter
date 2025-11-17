@@ -1,7 +1,7 @@
 'use client';
 
 import { ImageFile } from '@/components/ui/form';
-import { FileValue } from '@/components/ui/form/FileField';
+import { FileValue } from '@/components/ui/form/file-field';
 import { pick } from '@/lib/utils';
 import { useState } from 'react';
 

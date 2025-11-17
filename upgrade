@@ -8,3 +8,12 @@
 - Add has errors to the use-errors hooks linked to the errors store.
 - Make a log update on the footer of sheet.
 [from 2.0 to 3.0]
+- ui/toast : Update the toast component to make it appears on top
+- ui/table : Add the possibility to update the column style in the row and the head using col.className and item.headClass
+- ui/show : Add this component to make the conditionnal display more appealing
+- ui/select: Make some changes on the ui/select component 
+- ui/dropdown: Use react floating to control the floating behavior of the dropdown
+- ui/block: Add current block status persistance using the url. It's a little buggy.
+- from : Change a lot of things on form components add floating input field name text-field and light-select with is a better looking select.
+- config/i18/fr: Add the translation file for french
+- hooks/use-display: Update and fix the bugs

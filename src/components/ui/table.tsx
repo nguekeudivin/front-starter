@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { ReactNode } from "react";
+import { Package } from "lucide-react";
 
 export const TableContainer = ({
   className,
@@ -30,7 +31,7 @@ export const Table = ({
   return (
     <table
       className={cn(
-        "w-full text-base text-left rtl:text-right text-gray-500 ",
+        "w-full text-base text-left rtl:text-right text-sm",
         className
       )}
     >
@@ -47,13 +48,8 @@ export const TableHead = ({
   children: ReactNode;
 }) => {
   return (
-    <thead
-      className={cn(
-        "text-sm text-gray-700 uppercase bg-gray-50  ",
-        className
-      )}
-    >
-      <tr>{children}</tr>
+    <thead className={cn("text-sm text-gray-700 bg-white ", className)}>
+      <tr className="border-b  border-gray-200 py-2">{children}</tr>
     </thead>
   );
 };
@@ -66,7 +62,7 @@ export const TableHeadCell = ({
   children: ReactNode;
 }) => {
   return (
-    <th scope="col" className={cn("px-6 py-3", className)}>
+    <th scope="col" className={cn("px-4 py-3", className)}>
       {children}
     </th>
   );
@@ -82,7 +78,7 @@ export const TableRow = ({
   return (
     <tr
       className={cn(
-        "odd:bg-white  even:bg-gray-50  border-b  border-gray-200",
+        "bg-white border-b hover:bg-gray-50 border-gray-200",
         className
       )}
     >
@@ -98,7 +94,7 @@ export const TableCell = ({
   children: ReactNode;
   className?: string;
 }) => {
-  return <td className={cn("px-6 py-4", className)}>{children}</td>;
+  return <td className={cn("px-4 py-4", className)}>{children}</td>;
 };
 
 export default function SimpleTable({
@@ -123,8 +119,15 @@ export default function SimpleTable({
   return (
     <div>
       {items.length == 0 ? (
-        <div className="text-center bg-gray-50 border border-dashed p-8 rounded-md">
-          Aucune donnée disponible
+        <div className="text-center border-gray-300 border-2 border-dashed p-8 rounded-md">
+          <div>
+            <div className="text-center mx-auto">
+              <Package className="mx-auto w-8 h-8 text-gray-600" />
+            </div>
+            <div className="text-center text-gray-600 mt-2">
+              No data available
+            </div>
+          </div>
         </div>
       ) : (
         <TableContainer className={containerClass}>
@@ -134,7 +137,7 @@ export default function SimpleTable({
                 return (
                   <TableHeadCell
                     key={`${item.header}`}
-                    className={headCellClass}
+                    className={cn(headCellClass, item.headClass)}
                   >
                     {item.header}
                   </TableHeadCell>
@@ -147,8 +150,11 @@ export default function SimpleTable({
                   <TableRow key={`table${index}`} className={rowClass}>
                     {columns.map((col) => {
                       return (
-                        <TableCell key={col.name} className={cellClass}>
-                          {col.row ? col.row(item) : item[col.name]}
+                        <TableCell
+                          key={col.name}
+                          className={cn(cellClass, col.className)}
+                        >
+                          {col.row ? col.row(item, index) : item[col.name]}
                         </TableCell>
                       );
                     })}

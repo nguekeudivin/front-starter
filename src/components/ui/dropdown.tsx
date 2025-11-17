@@ -1,84 +1,152 @@
-import { cn } from '@/lib/utils';
-import { useState } from 'react';
+"use client";
 
-import { createContext, useContext } from 'react';
+import { cn } from "@/lib/utils";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useRef,
+  ReactNode,
+} from "react";
+import {
+  useFloating,
+  offset,
+  flip,
+  shift,
+  autoUpdate,
+  FloatingPortal,
+  useClick,
+  useDismiss,
+  useRole,
+  useInteractions,
+} from "@floating-ui/react";
 
 interface DropdownContextType {
-    open: boolean;
-    setOpen: any;
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  refs: any;
+  floatingStyles: React.CSSProperties;
+  getReferenceProps: any;
+  getFloatingProps: any;
 }
 
-const DropdownContext = createContext<DropdownContextType | undefined>(undefined);
+const DropdownContext = createContext<DropdownContextType | null>(null);
 
-const useDropdown = (): DropdownContextType => {
-    const context = useContext(DropdownContext);
-    if (!context) {
-        throw new Error('Cannot use dropdown outside context');
-    }
-    return context;
+const useDropdown = () => {
+  const ctx = useContext(DropdownContext);
+  if (!ctx) throw new Error("useDropdown must be used inside <Dropdown.Root>");
+  return ctx;
 };
 
-const Trigger = ({ children }: { children: React.ReactNode }) => {
-    const { setOpen, open } = useDropdown();
-    return (
-        <div
-            onClick={() => {
-                setOpen(!open);
-            }}
-            className="cursor-pointer"
-        >
-            {children}
-        </div>
-    );
+const DropdownMenu = ({ children }: { children: ReactNode }) => {
+  const [open, setOpen] = useState(false);
+
+  const { refs, floatingStyles, context } = useFloating({
+    open,
+    onOpenChange: setOpen,
+    placement: "bottom-end", // start below and right-aligned
+    middleware: [offset(6), flip(), shift()],
+    whileElementsMounted: autoUpdate,
+  });
+
+  const click = useClick(context);
+  const dismiss = useDismiss(context);
+  const role = useRole(context);
+
+  const { getReferenceProps, getFloatingProps } = useInteractions([
+    click,
+    dismiss,
+    role,
+  ]);
+
+  return (
+    <DropdownContext.Provider
+      value={{
+        open,
+        setOpen,
+        refs,
+        floatingStyles,
+        getReferenceProps,
+        getFloatingProps,
+      }}
+    >
+      <div className="relative inline-block">{children}</div>
+    </DropdownContext.Provider>
+  );
 };
 
-const Content = ({ children, className }: { children: any; className?: string }) => {
-    const { open } = useDropdown();
-    return (
-        <ul
-            id="dropdown"
-            aria-labelledby="dropdownDefaultButton"
-            className={cn(
-                'absolute z-10 hidden w-44 divide-y divide-gray-100 rounded-lg bg-white py-2 shadow-sm',
-                {
-                    block: open,
-                },
-                className,
-            )}
-        >
-            {children}
-        </ul>
-    );
+const Trigger = ({ children }: { children: ReactNode }) => {
+  const { refs, getReferenceProps } = useDropdown();
+  return (
+    <div
+      ref={refs.setReference}
+      {...getReferenceProps()}
+      className="cursor-pointer"
+    >
+      {children}
+    </div>
+  );
 };
 
-const Item = ({ children, className }: { children: React.ReactNode; className?: string }) => {
-    const { setOpen } = useDropdown();
-    return (
-        <li
-            onClick={() => {
-                setOpen(false);
-            }}
-            className={cn('dropdown-item block cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100', className)}
-        >
-            {children}
-        </li>
-    );
+const Content = ({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) => {
+  const { open, refs, floatingStyles, getFloatingProps } = useDropdown();
+
+  if (!open) return null;
+
+  return (
+    <FloatingPortal>
+      <ul
+        ref={refs.setFloating}
+        style={floatingStyles}
+        {...getFloatingProps()}
+        className={cn(
+          "z-50 min-w-[10rem] divide-y divide-gray-100 rounded-lg bg-white py-2 shadow-lg ring-1 ring-black/5 transition-all",
+          className
+        )}
+      >
+        {children}
+      </ul>
+    </FloatingPortal>
+  );
 };
 
-const DropdownMenu = ({ children }: { children: React.ReactNode }) => {
-    const [open, setOpen] = useState<boolean>(false);
-    return (
-        <DropdownContext.Provider value={{ open, setOpen }}>
-            <div className="relative">{children}</div>
-        </DropdownContext.Provider>
-    );
+const Item = ({
+  children,
+  className,
+  onClick,
+}: {
+  children: ReactNode;
+  className?: string;
+  onClick?: () => void;
+}) => {
+  const { setOpen } = useDropdown();
+  return (
+    <li
+      onClick={() => {
+        onClick?.();
+        setOpen(false);
+      }}
+      className={cn(
+        "flex items-center gap-2 cursor-pointer px-4 py-2 text-sm text-gray-700 hover:bg-gray-100",
+        className
+      )}
+    >
+      {children}
+    </li>
+  );
 };
 
 const Dropdown = {
-    Root: DropdownMenu,
-    Trigger: Trigger,
-    Content: Content,
-    Item: Item,
+  Root: DropdownMenu,
+  Trigger,
+  Content,
+  Item,
 };
 
 export default Dropdown;
